@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="test_kotlin_kmp-js-1.0-SNAPSHOT">
+    <output-path>$PROJECT_DIR$/build/libs</output-path>
+    <root id="archive" name="test_kotlin_kmp-js-1.0-SNAPSHOT.jar">
+      <element id="module-output" name="test_kotlin_kmp.jsMain" />
+    </root>
+  </artifact>
+</component>

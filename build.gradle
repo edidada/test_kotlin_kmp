@@ -1,0 +1,60 @@
+plugins {
+    id 'org.jetbrains.kotlin.multiplatform' version '2.1.10'
+    id 'org.jetbrains.kotlin.plugin.serialization' version '2.1.10'
+}
+
+group = 'org.example.test'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    maven { url = 'https://maven.aliyun.com/repository/public' }
+    maven { url = 'https://maven.aliyun.com/repository/central' }
+    mavenCentral()
+}
+
+kotlin {
+    jvmToolchain(17)
+
+    // ===== 目标平台 =====
+    jvm()                       // JVM 目标：Windows/Linux/macOS/Android 虚拟机
+    js { nodejs() }             // Kotlin/JS 目标：Node.js 运行时（IR 编译器，Kotlin 2.x 默认）
+
+    // 如需 Native 目标（会额外下载约 1GB Kotlin/Native 工具链），取消注释：
+    // mingwX64()   // Windows 原生
+    // linuxX64()   // Linux 原生
+    // macosX64(); macosArm64()  // macOS 原生（只能在 macOS 主机上完整构建）
+
+    // ===== 源集（source sets）=====
+    sourceSets {
+        commonMain.dependencies {
+            // 多平台库：common 代码直接依赖，各目标自动解析到对应变体
+            implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0'
+            implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3'
+        }
+        commonTest.dependencies {
+            implementation kotlin('test')                                  // 跨平台断言框架
+            implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.9.0'
+        }
+    }
+
+    // 抑制 expect/actual class 的 Beta 警告（Kotlin 2.x 中 expect 类仍是 Beta 特性）
+    targets.configureEach {
+        compilations.configureEach {
+            compileTaskProvider.configure {
+                compilerOptions {
+                    freeCompilerArgs.add('-Xexpect-actual-classes')
+                }
+            }
+        }
+    }
+}
+
+// ===== 运行 JVM 演示的便捷任务：gradlew runDemo =====
+def jvmMainCompilation = kotlin.targets.getByName('jvm').compilations.getByName('main')
+
+tasks.register('runDemo', JavaExec) {
+    description = '运行 KMP 功能演示（JVM 侧）'
+    dependsOn 'compileKotlinJvm'
+    mainClass = 'org.example.test.MainKt'
+    classpath = files(jvmMainCompilation.output.classesDirs) + jvmMainCompilation.runtimeDependencyFiles
+}
